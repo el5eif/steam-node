@@ -1,0 +1,24 @@
+{
+  "name": "steam-node",
+  "version": "0.0.1",
+  "description": "A NodeJS wrapper for Steam's APIs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "steam",
+    "api",
+    "wrapper"
+  ],
+  "author": "elseif",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/el5eif/steam-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/el5eif/steam-node/issues"
+  },
+  "homepage": "https://github.com/el5eif/steam-node#readme"
+}
