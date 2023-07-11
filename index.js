@@ -9,6 +9,10 @@ class API {
         user: ''
     }
     /**
+     * @private
+     */
+    error = true
+    /**
      * @param {string} url
      * @param {object} options
      * @param {'GET'|'POST'} method
@@ -17,31 +21,38 @@ class API {
      * @private
      */
     request = (url, options, method, service, auth) => {
-        options = Object.assign(options, auth ? { key: this.keys[auth] } : {})
+        if (service) url += `?${auth ? `key=${this.keys[auth]}&` : ''}input_json=${encodeURIComponent(JSON.stringify(options))}`
+        else {
+            options = Object.assign(options, auth ? { key: this.keys[auth] } : {})
+            const keys = Object.keys(options)
 
-        const keys = Object.keys(options)
-        console.log(keys, options)
+            url += [
+                '',
+                `?${keys[0]}=${Object.values(options)[0]}`,
+                `?${keys[0]}=${Object.values(options)[0]}${keys.slice(1).map(key => `&${key}=${options[key]}`).join('')}`
+            ][Math.max(keys.length, 2)]
+        }
         
-        if (service) url += encodeURIComponent(JSON.stringify(options))
-        else url += [
-            '',
-            `?${keys[0]}=${Object.values(options)[0]}`,
-            `?${keys[0]}=${Object.values(options)[0]}${keys.slice(1).map(key => `&${key}=${options[key]}`).join('')}`
-        ][Math.max(keys.length, 2)]
-        console.log(url)
         return new Promise(resolve => https.request(url, { method }, res => {
             let info = ''
             res.on('data', data => info += data)
-            res.on('end', () => resolve(JSON.parse(info)))
+            res.on('end', () => {
+                if (info.startsWith('<')) {
+                    if (this.error) throw new Error(`\u001B[31mInvalid API Response \u001B[35m(${info.match(/<title>(.*?)<\/title>/)[1]})\n\u001B[33m${info.match(/<body>(.*?)<\/body>/)[0].replace(/(<pre>|<\/pre>)/ig, '"').replace( /(<([^>]+)>)/ig, ' ').slice(info.match(/<title>(.*?)<\/title>/)[1].length + 3)}\u001B[0m`)
+                    else resolve(info)
+                } else resolve(JSON.parse(info))
+            })
         }).end())
     }
     /**
-     * @param {object} [keys]
+     * @param {object} keys
      * @param {string} [keys.publisher]
      * @param {string} [keys.user] 
+     * @param {boolean} [error]
      */
-    constructor (keys = {}) {
+    constructor (keys = {}, error = true) {
         this.keys = Object.assign(this.keys, keys)
+        this.error = error
     }
     /**
      * @param {number} steamid The Steam ID of the user who is being reported for cheating.
@@ -126,14 +137,14 @@ class API {
      * @param {string} [platforms_to_sync] List of platforms for which this file is valid. See Uploading Files for the list of possible values.
      * @param {string} [file_sha] Hex string (40 digits) representing the SHA1 digest of the file.
      */
-    enumerateUserFiles = (appid, ugcid, filename, timestamp, file_size, url, steamid_creator, flags, platforms_to_sync, file_sha) => this.request('https://api.steampowered.com/ICloudService/EnumerateUserFiles/v1/?access_token=<token>&appid=1234&extended_details=1', { appid, ugcid, filename, timestamp, file_size, url, steamid_creator, flags, platforms_to_sync, file_sha }, 'GET', true)
+    enumerateUserFiles = (appid, ugcid, filename, timestamp, file_size, url, steamid_creator, flags, platforms_to_sync, file_sha) => this.request('https://api.steampowered.com/ICloudService/EnumerateUserFiles/v1/?access_token=<token>&appid=1234&extended_details=1', { appid, ugcid, filename, timestamp, file_size, url, steamid_creator, flags, platforms_to_sync, file_sha }, 'GET', false)
     /**
      * @param {string} access_token OAuth access token for the user
      * @param {number} appid Your App ID
      * @param {number} batch_id The ID number of this batch
      * @param {number} batch_eresult Result of the batch (see remarks)
      */
-    completeAppUploadBatch = (access_token, appid, batch_id, batch_eresult) => this.request('https://api.steampowered.com/ICloudService/CompleteAppUploadBatch/v1/', { access_token, appid, batch_id, batch_eresult }, 'POST', true)
+    completeAppUploadBatch = (access_token, appid, batch_id, batch_eresult) => this.request('https://api.steampowered.com/ICloudService/CompleteAppUploadBatch/v1/', { access_token, appid, batch_id, batch_eresult }, 'POST', false)
     /**
      * @param {string} [name] the header name
      * @param {string} [value] the header value
@@ -146,13 +157,13 @@ class API {
      * @param {string} filename the file name
      * @param {string} file_sha Hex string (40 digits) representing the SHA1 digest of the file.
      */
-    commitHTTPUpload = (access_token, appid, transfer_succeeded, filename, file_sha) => this.request('https://api.steampowered.com/ICloudService/CommitHTTPUpload/v1/', { access_token, appid, transfer_succeeded, filename, file_sha }, 'POST', true)
+    commitHTTPUpload = (access_token, appid, transfer_succeeded, filename, file_sha) => this.request('https://api.steampowered.com/ICloudService/CommitHTTPUpload/v1/', { access_token, appid, transfer_succeeded, filename, file_sha }, 'POST', false)
     /**
      * @param {string} access_token OAuth access token for the user
      * @param {number} appid Your App ID
      * @param {string} filename filename of the file to delete
      */
-    delete = (access_token, appid, filename) => this.request('https://api.steampowered.com/ICloudService/Delete/v1/', { access_token, appid, filename }, 'POST', true)
+    delete = (access_token, appid, filename) => this.request('https://api.steampowered.com/ICloudService/Delete/v1/', { access_token, appid, filename }, 'POST', false)
     /**
      * @param {number} steamid The SteamID of the user to check
      */
@@ -304,7 +315,7 @@ class API {
     /**
     
      */
-    getAccountList = () => this.request('https://api.steampowered.com/IGameServersService/GetAccountList/v1/', {}, 'GET', false, 'user')
+    getAccountList = () => this.request('https://api.steampowered.com/IGameServersService/GetAccountList/v1/', {}, 'GET', true, 'user')
     /**
      * @param {number} appid The app to use the account for
      * @param {string} memo The memo to set on the new account
@@ -525,13 +536,13 @@ class API {
     /**
      * @param {number} [siteid] Site ID to see; zero for all sites
      */
-    getCurrentClientConnections = (siteid) => this.request('https://api.steampowered.com/ISiteLicenseService/GetCurrentClientConnections/v1/', { siteid }, 'GET', true, 'publisher')
+    getCurrentClientConnections = (siteid) => this.request('https://api.steampowered.com/ISiteLicenseService/GetCurrentClientConnections/v1/', { siteid }, 'GET', false, 'publisher')
     /**
      * @param {number} [id] ID of game in the game_names section of the response
      * @param {string} [license_type] Playtime is divided up for each game by the type of license used. See the GetCurrentClientConnections section above for the list.
      * @param {number} [playtime_seconds] total playtime for this game and license type, in seconds, for the requested period.
      */
-    getTotalPlaytime = (id, license_type, playtime_seconds) => this.request('https://api.steampowered.com/ISiteLicenseService/GetTotalPlaytime/v1/', { id, license_type, playtime_seconds }, 'GET', true)
+    getTotalPlaytime = (id, license_type, playtime_seconds) => this.request('https://api.steampowered.com/ISiteLicenseService/GetTotalPlaytime/v1/', { id, license_type, playtime_seconds }, 'GET', false)
     /**
      * @param {number} appid The App ID to get the betas of.
      */

@@ -395,7 +395,7 @@ const endpoints = {
     },
     "EnumerateUserFiles": {
         "parent": "ICloudService",
-        "service": true,
+        "service": false,
         "url": "https://api.steampowered.com/ICloudService/EnumerateUserFiles/v1/?access_token=<token>&appid=1234&extended_details=1",
         "method": "GET",
         "params": [
@@ -453,7 +453,7 @@ const endpoints = {
     },
     "CompleteAppUploadBatch": {
         "parent": "ICloudService",
-        "service": true,
+        "service": false,
         "url": "https://api.steampowered.com/ICloudService/CompleteAppUploadBatch/v1/",
         "method": "POST",
         "params": [
@@ -485,7 +485,7 @@ const endpoints = {
     },
     "BeginHTTPUpload": {
         "parent": "ICloudService",
-        "service": true,
+        "service": false,
         "url": "https://steamcloud-us-west1.storage.googleapis.com/00/00/00/00/1234/012_3_4A77D494_9D267_1464.dat?GoogleAccessId=numbersandletters@developer.gserviceaccount.com&Expires=1595961837&Signature=morestuffhere",
         "method": "PUT",
         "params": [
@@ -2533,7 +2533,7 @@ const endpoints = {
     },
     "GetCurrentClientConnections": {
         "parent": "ISiteLicenseService",
-        "service": true,
+        "service": false,
         "url": "https://api.steampowered.com/ISiteLicenseService/GetCurrentClientConnections/v1/",
         "method": "GET",
         "params": [
@@ -2553,7 +2553,7 @@ const endpoints = {
     },
     "GetTotalPlaytime": {
         "parent": "ISiteLicenseService",
-        "service": true,
+        "service": false,
         "url": "https://api.steampowered.com/ISiteLicenseService/GetTotalPlaytime/v1/",
         "method": "GET",
         "params": [
