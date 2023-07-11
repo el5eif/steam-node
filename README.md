@@ -1,4 +1,6 @@
-[![npm version](https://badge.fury.io/js/steam-node.svg)](https://badge.fury.io/js/steam-node)
+[![version](https://img.shields.io/npm/v/steam-node.svg)]()
+[![downloads](https://img.shields.io/npm/dt/steam-node.svg)]()
+[![style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 # steam-node
 
